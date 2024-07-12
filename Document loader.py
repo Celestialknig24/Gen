@@ -6,6 +6,7 @@ import xlrd  # For .xls files
 from openpyxl import load_workbook
 import pypandoc
 from langchain.docstore.document import Document
+from pptx import Presentation
 
 def read_txt(file_path):
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
@@ -48,8 +49,18 @@ def read_xlsx(file_path):
         data.append("\t".join(map(str, row)))
     return "\n".join(data)
 
+def read_ppt(file_path):
+    presentation = Presentation(file_path)
+    text = []
+    for slide in presentation.slides:
+        for shape in slide.shapes:
+            if hasattr(shape, "text"):
+                text.append(shape.text)
+    return "\n".join(text)
+
 def load_files(directory):
     documents = []
+    unread_documents = []
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         try:
@@ -65,20 +76,35 @@ def load_files(directory):
                 content = read_xls(file_path)
             elif filename.endswith('.xlsx'):
                 content = read_xlsx(file_path)
+            elif filename.endswith('.ppt') or filename.endswith('.pptx'):
+                content = read_ppt(file_path)
             else:
                 print(f"Unsupported file format: {filename}")
+                unread_documents.append(filename)
                 continue
 
             doc = Document(page_content=content, metadata={"filename": filename})
             documents.append(doc)
         except Exception as e:
             print(f"Failed to process {filename}: {e}")
-    return documents
+            unread_documents.append(filename)
+    return documents, unread_documents
 
 # Example usage
 directory = 'path_to_your_directory'
-documents = load_files(directory)
+documents, unread_documents = load_files(directory)
+
 for doc in documents:
     print(f"Filename: {doc.metadata['filename']}")
     print(f"Content: {doc.page_content[:200]}")  # Print first 200 characters of content
     print("\n")
+
+if unread_documents:
+    print("Unread Documents:")
+    for filename in unread_documents:
+        print(filename)
+
+# Optionally, save the unread documents to a log file
+with open('unread_documents.log', 'w') as log_file:
+    for filename in unread_documents:
+        log_file.write(f"{filename}\n")
