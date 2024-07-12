@@ -31,9 +31,6 @@ def read_docx(file_path):
     doc = DocxDocument(file_path)
     return "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
-def read_doc(file_path):
-    return pypandoc.convert_file(file_path, 'plain')
-
 def read_docm(file_path):
     with open(file_path, 'rb') as docm_file:
         result = mammoth.extract_raw_text(docm_file)
@@ -63,6 +60,14 @@ def read_ppt(file_path):
             if hasattr(shape, "text"):
                 text.append(shape.text)
     return "\n".join(text)
+
+
+def read_doc(file_path):
+    result = subprocess.run(['antiword',file_path],capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"Error reading {file_path}: {result.stderr}")
+    return result.stdout
+
 
 def load_files(directory):
     documents = []
