@@ -7,6 +7,7 @@ from openpyxl import load_workbook
 import pypandoc
 from langchain.docstore.document import Document
 from pptx import Presentation
+import mammoth
 
 def read_txt(file_path):
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
@@ -32,6 +33,11 @@ def read_docx(file_path):
 
 def read_doc(file_path):
     return pypandoc.convert_file(file_path, 'plain')
+
+def read_docm(file_path):
+    with open(file_path, 'rb') as docm_file:
+        result = mammoth.extract_raw_text(docm_file)
+        return result.value
 
 def read_xls(file_path):
     workbook = xlrd.open_workbook(file_path)
@@ -72,6 +78,8 @@ def load_files(directory):
                 content = read_docx(file_path)
             elif filename.endswith('.doc'):
                 content = read_doc(file_path)
+            elif filename.endswith('.docm'):
+                content = read_docm(file_path)
             elif filename.endswith('.xls'):
                 content = read_xls(file_path)
             elif filename.endswith('.xlsx'):
