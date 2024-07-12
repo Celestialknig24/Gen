@@ -52,24 +52,27 @@ def load_files(directory):
     documents = []
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if filename.endswith('.txt'):
-            content = read_txt(file_path)
-        elif filename.endswith('.pdf'):
-            content = read_pdf(file_path)
-        elif filename.endswith('.docx'):
-            content = read_docx(file_path)
-        elif filename.endswith('.doc'):
-            content = read_doc(file_path)
-        elif filename.endswith('.xls'):
-            content = read_xls(file_path)
-        elif filename.endswith('.xlsx'):
-            content = read_xlsx(file_path)
-        else:
-            print(f"Unsupported file format: {filename}")
-            continue
-        
-        doc = Document(page_content=content, metadata={"filename": filename})
-        documents.append(doc)
+        try:
+            if filename.endswith('.txt'):
+                content = read_txt(file_path)
+            elif filename.endswith('.pdf'):
+                content = read_pdf(file_path)
+            elif filename.endswith('.docx'):
+                content = read_docx(file_path)
+            elif filename.endswith('.doc'):
+                content = read_doc(file_path)
+            elif filename.endswith('.xls'):
+                content = read_xls(file_path)
+            elif filename.endswith('.xlsx'):
+                content = read_xlsx(file_path)
+            else:
+                print(f"Unsupported file format: {filename}")
+                continue
+
+            doc = Document(page_content=content, metadata={"filename": filename})
+            documents.append(doc)
+        except Exception as e:
+            print(f"Failed to process {filename}: {e}")
     return documents
 
 # Example usage
