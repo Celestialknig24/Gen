@@ -78,6 +78,7 @@ def create_and_save_faiss_index(documents, embeddings_model, batch_size=1000, in
     all_embeddings = []
     all_documents = []
     docstore = {}
+    doc_ids = []
 
     for i in range(0, len(documents), batch_size):
         batch_docs = documents[i:i + batch_size]
@@ -85,7 +86,9 @@ def create_and_save_faiss_index(documents, embeddings_model, batch_size=1000, in
         all_embeddings.append(faiss_index.index.reconstruct_n(0, faiss_index.index.ntotal))
         all_documents.extend(batch_docs)
         for doc in batch_docs:
-            docstore[doc.metadata['filename']] = doc
+            doc_id = doc.metadata['filename']
+            docstore[doc_id] = doc
+            doc_ids.append(doc_id)
     
     # Concatenate all embeddings
     embeddings = np.vstack(all_embeddings)
@@ -98,18 +101,21 @@ def create_and_save_faiss_index(documents, embeddings_model, batch_size=1000, in
     # Save final FAISS index
     faiss.write_index(final_index, index_path)
     
-    # Save Document objects
+    # Save Document objects and doc_ids
     with open(docs_path, 'wb') as f:
-        pickle.dump((all_documents, docstore), f)
+        pickle.dump((all_documents, docstore, doc_ids), f)
 
 def load_faiss_index(index_path='faiss_index.bin', docs_path='documents.pkl'):
     # Load FAISS index
     index = faiss.read_index(index_path)
 
-    # Load Document objects and docstore
+    # Load Document objects, docstore, and doc_ids
     with open(docs_path, 'rb') as f:
-        all_documents, docstore = pickle.load(f)
+        all_documents, docstore, doc_ids = pickle.load(f)
+
+    def index_to_docstore_id(index):
+        return doc_ids[index]
 
     # Create FAISS object
-    faiss_index = FAISS(index=index, docstore=docstore, embedding_function=VertexAIEmbeddings().embed_documents)
+    faiss_index = FAISS(index=index, docstore=docstore, embedding_function=VertexAIEmbeddings().embed_documents, index_to_docstore_id=index_to_docstore_id)
     return faiss_index, all_documents
