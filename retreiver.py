@@ -2,6 +2,19 @@ from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, FewShotPr
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableParallel
 
+def load_faiss_index(index_path='faiss_index.bin', docs_path='documents.pkl'):
+    # Load FAISS index
+    index = faiss.read_index(index_path)
+
+    # Load Document objects
+    with open(docs_path, 'rb') as f:
+        documents = pickle.load(f)
+
+    faiss_index = FAISS(index=index, docstore=None, docstore_index=None, embeddings=None, metadata=None, original=None)
+    faiss_index.docstore = {doc.metadata['filename']: doc for doc in documents}
+    return faiss_index, documents
+
+
 def create_retriever(vectorstore):
     # Create retriever
     retriever = vectorstore.as_retriever()
