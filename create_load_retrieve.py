@@ -59,8 +59,30 @@ print(response)
 
 
 
-embeddings_model = VertexAIEmbeddings(model_name="textembedding-gecko@latest")
-texts="10 millions texts"
-faiss_index = FAISS.from_embeddings(embeddings_model, texts)
-for this the model cannot handle tokens to above 20,000
-search an alternative approach
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[13], line 1
+----> 1 faiss_index = FAISS.from_embeddings(emb,txt)
+
+File /opt/conda/lib/python3.10/site-packages/langchain_community/vectorstores/faiss.py:1006, in FAISS.from_embeddings(cls, text_embeddings, embedding, metadatas, ids, **kwargs)
+    977 @classmethod
+    978 def from_embeddings(
+    979     cls,
+   (...)
+    984     **kwargs: Any,
+    985 ) -> FAISS:
+    986     """Construct FAISS wrapper from raw documents.
+    987 
+    988     This is a user friendly interface that:
+   (...)
+   1004             faiss = FAISS.from_embeddings(text_embedding_pairs, embeddings)
+   1005     """
+-> 1006     texts, embeddings = zip(*text_embeddings)
+   1007     return cls.__from(
+   1008         list(texts),
+   1009         list(embeddings),
+   (...)
+   1013         **kwargs,
+   1014     )
+
+ValueError: too many values to unpack (expected 2)
