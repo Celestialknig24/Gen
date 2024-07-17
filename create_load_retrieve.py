@@ -2,24 +2,19 @@ from langchain.embeddings import VertexAIEmbeddings
 from langchain.llms import VertexAI
 from langchain.vectorstores import FAISS
 from langchain.docstore.document import Document
-from transformers import AutoTokenizer
+from langchain.text_splitter import CharacterTextSplitter
 import pickle
 
 # Initialize Vertex AI models
 embeddings_model = VertexAIEmbeddings(model_name="textembedding-gecko@latest")
 llm = VertexAI(model="gemini-pro", top_k=5, top_p=0.9, temperature=0.7, max_output_tokens=2048)
 
-# Helper function to chunk documents
-def chunk_text(text, max_length=512):
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-    tokens = tokenizer.tokenize(text)
-    chunks = [" ".join(tokens[i:i + max_length]) for i in range(0, len(tokens), max_length)]
-    return chunks
-
-def chunk_documents(documents, max_length=512):
+# Helper function to chunk documents using CharacterTextSplitter
+def chunk_documents(documents, chunk_size=512, chunk_overlap=50):
+    text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunked_docs = []
     for doc in documents:
-        chunks = chunk_text(doc.page_content, max_length)
+        chunks = text_splitter.split_text(doc.page_content)
         chunked_docs.extend([Document(page_content=chunk, metadata=doc.metadata) for chunk in chunks])
     return chunked_docs
 
