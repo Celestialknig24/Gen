@@ -54,3 +54,13 @@ faiss_index, docs = load_faiss_index()
 query = "What is the capital of France?"
 response = generate_response(query, faiss_index, embeddings_model, llm)
 print(response)
+
+
+
+
+
+embeddings_model = VertexAIEmbeddings(model_name="textembedding-gecko@latest")
+texts="10 millions texts"
+faiss_index = FAISS.from_embeddings(embeddings_model, texts)
+for this the model cannot handle tokens to above 20,000
+search an alternative approach
