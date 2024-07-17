@@ -1,3 +1,16 @@
+def create_and_save_faiss_index(documents, embeddings_model, combined_path='faiss_and_docs.pkl'):
+    faiss_index = FAISS.from_documents(documents, embeddings_model)
+    with open(combined_path, 'wb') as f:
+        pickle.dump({'index': faiss_index, 'documents': documents}, f)
+
+
+def load_faiss_index(combined_path='faiss_and_docs.pkl'):
+    with open(combined_path, 'rb') as f:
+        data = pickle.load(f)
+    return data['index'], data['documents']
+
+
+
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, FewShotPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableParallel
